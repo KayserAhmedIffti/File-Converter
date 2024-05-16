@@ -5,13 +5,11 @@ from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from tkinter import Tk, Label, Entry, Button, filedialog
+from tkinter import ttk
 from copy import copy
 
 def process_data(assignee_name, report_start, report_end, file_path):
     if getattr(sys, 'frozen', False):
-        # If the application is run as a bundle, the PyInstaller bootloader
-        # extends the sys module by a flag frozen=True and sets the app 
-        # path into variable _MEIPASS'.
         curdir = sys._MEIPASS
     else:
         curdir = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +32,7 @@ def process_data(assignee_name, report_start, report_end, file_path):
     # Filter the DataFrame based on the date criteria
     filtered_df = df[(df['Due Date'] >= start_date) & (df['Due Date'] <= end_date)]
 
-    # Filter the data which contains 'S M Anwarul Aziz' in 'Assignees'
+    # Filter the data which contains the assignee in 'Assignees'
     filtered_df = filtered_df[filtered_df['Assignees'].str.contains(assignee_name)]
 
     # Group the filtered DataFrame by 'Folder Name'
@@ -126,9 +124,24 @@ def browse_file():
     filename = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*")))
     file_path_entry.delete(0, 'end')
     file_path_entry.insert(0, filename)
+    populate_assignees(filename)
+
+def populate_assignees(file_path):
+    # List of predefined assignees
+    predefined_assignees = ['Touhidul Islam', 'S M Anwarul Aziz', 'Md Arafin Mahamud', 'Muntasirur Rahman', 'Moue Islam', 'Sumaiya Sabur']
+
+    # Read the Excel file and extract assignees
+    df = pd.read_excel(file_path)
+    assignees = set(predefined_assignees)
+    for assignee_list in df['Assignees'].dropna().unique():
+        for assignee in assignee_list.split(','):
+            assignees.add(assignee.strip())
+    
+    # Update the combobox values
+    assignee_combobox['values'] = list(assignees)
 
 def run():
-    assignee_name = assignee_entry.get()
+    assignee_name = assignee_combobox.get()
     report_start = start_date_entry.get()
     report_end = end_date_entry.get()
     file_path = file_path_entry.get()
@@ -139,9 +152,8 @@ root = Tk()
 root.title("ClickUp Data Processor")
 
 Label(root, text="Assignee Name").grid(row=0, column=0, padx=10, pady=10)
-assignee_entry = Entry(root)
-assignee_entry.grid(row=0, column=1, padx=10, pady=10)
-assignee_entry.insert(0, 'S M Anwarul Aziz')
+assignee_combobox = ttk.Combobox(root)
+assignee_combobox.grid(row=0, column=1, padx=10, pady=10)
 
 Label(root, text="Report Start Date (YYYY-MM-DD)").grid(row=1, column=0, padx=10, pady=10)
 start_date_entry = Entry(root)
@@ -163,5 +175,9 @@ browse_button.grid(row=3, column=2, padx=10, pady=10)
 
 run_button = Button(root, text="Run", command=run)
 run_button.grid(row=4, column=1, padx=10, pady=10)
+
+# Initialize the combobox with predefined assignees
+predefined_assignees = ['Touhidul Islam', 'S M Anwarul Aziz', 'Md Arafin Mahamud', 'Muntasirur Rahman', 'Moue Islam', 'Sumaiya Sabur']
+assignee_combobox['values'] = predefined_assignees
 
 root.mainloop()
