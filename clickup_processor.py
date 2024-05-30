@@ -6,6 +6,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from tkinter import Tk, Label, Entry, Button, filedialog
 from tkinter import ttk
+from tkcalendar import DateEntry
 from copy import copy
 
 def process_data(assignee_name, report_start, report_end, file_path):
@@ -110,21 +111,15 @@ def browse_file():
     filename = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*")))
     file_path_entry.delete(0, 'end')
     file_path_entry.insert(0, filename)
-    populate_assignees(filename)
 
-def populate_assignees(file_path):
+def populate_assignees():
     predefined_assignees = ['Touhidul Islam', 'S M Anwarul Aziz', 'Md Arafin Mahamud', 'Muntasirur Rahman', 'Moue Islam', 'Sumaiya Sabur']
-    df = pd.read_excel(file_path)
-    assignees = set(predefined_assignees)
-    for assignee_list in df['Assignees'].dropna().unique():
-        for assignee in assignee_list.split(','):
-            assignees.add(assignee.strip())
-    assignee_combobox['values'] = list(assignees)
+    assignee_combobox['values'] = predefined_assignees
 
 def run():
     assignee_name = assignee_combobox.get()
-    report_start = start_date_entry.get()
-    report_end = end_date_entry.get()
+    report_start = start_date_entry.get_date().strftime('%Y-%m-%d')
+    report_end = end_date_entry.get_date().strftime('%Y-%m-%d')
     file_path = file_path_entry.get()
     process_data(assignee_name, report_start, report_end, file_path)
 
@@ -133,12 +128,17 @@ root.title("ClickUp Data Processor")
 Label(root, text="Assignee Name").grid(row=0, column=0, padx=10, pady=10)
 assignee_combobox = ttk.Combobox(root)
 assignee_combobox.grid(row=0, column=1, padx=10, pady=10)
+populate_assignees()  # Populate the combobox with predefined assignees at startup
+
 Label(root, text="Report Start Date (YYYY-MM-DD)").grid(row=1, column=0, padx=10, pady=10)
-start_date_entry = Entry(root)
+start_date_entry = DateEntry(root, date_pattern='yyyy-mm-dd')
 start_date_entry.grid(row=1, column=1, padx=10, pady=10)
+
 Label(root, text="Report End Date (YYYY-MM-DD)").grid(row=2, column=0, padx=10, pady=10)
-end_date_entry = Entry(root)
+end_date_entry = DateEntry(root, date_pattern='yyyy-mm-dd')
+end_date_entry.set_date(datetime.today())
 end_date_entry.grid(row=2, column=1, padx=10, pady=10)
+
 Label(root, text="Excel File Path").grid(row=3, column=0, padx=10, pady=10)
 file_path_entry = Entry(root, width=50)
 file_path_entry.grid(row=3, column=1, padx=10, pady=10)
