@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from tkinter import Tk, Label, Entry, Button, filedialog
@@ -132,6 +132,7 @@ populate_assignees()  # Populate the combobox with predefined assignees at start
 
 Label(root, text="Report Start Date (YYYY-MM-DD)").grid(row=1, column=0, padx=10, pady=10)
 start_date_entry = DateEntry(root, date_pattern='yyyy-mm-dd')
+start_date_entry.set_date(datetime.today() - timedelta(days=7))
 start_date_entry.grid(row=1, column=1, padx=10, pady=10)
 
 Label(root, text="Report End Date (YYYY-MM-DD)").grid(row=2, column=0, padx=10, pady=10)
